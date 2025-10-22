@@ -1,6 +1,6 @@
 
 
-def client_or_summary() -> str | None:
+def client_or_owner() -> str | None:
     while True:
         answer = input("Are you a client or the owner?: ").lower()
         if answer != "client" and answer != "owner":
