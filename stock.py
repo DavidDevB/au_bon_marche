@@ -3,6 +3,11 @@ from dataclasses import dataclass
 
 @dataclass
 class Stock:
+
+    """
+    Classe Stock représentant le stock restant de légumes et fruits.
+    """
+
     stock = [
     {"type": "fruit", "name": "Clementine", "stock": 6, "unit": "kg", "price": 2.90},
     {"type": "fruit", "name": "Date", "stock": 4, "unit": "kg", "price": 7.00},
