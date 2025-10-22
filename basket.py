@@ -1,6 +1,11 @@
 
 
 class Basket:
+
+    """
+    Classe Basket représentant le panier et pouvant retourner un booléen selon si le panier est valide ou non.
+    """
+
     def __init__(self, client: list[str], content: list[dict]):
         self.client = client
         self.content = content
