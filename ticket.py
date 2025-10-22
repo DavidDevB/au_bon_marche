@@ -6,6 +6,8 @@ class Ticket:
 
     def __repr__(self):
         total = 0
+        print(f"You bought :")
         for el in content:
             total += el.price
-        print(f"Votre total est de {total}€")
+            print(f"{content.quantity} {content.name}(s)")
+        print(f"Your total is {total}€")
