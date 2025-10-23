@@ -35,6 +35,7 @@ class Client:
             self.firstname = firstname
             self.lastname = lastname
             self.client_id = "".join([firstname, lastname])
+            break
 
         return {
             "firstname": self.firstname,

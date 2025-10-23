@@ -1,9 +1,12 @@
 
-from au_bon_marche import choose_your_items
+from au_bon_marche import buy_items
+from summary import Summary
 
 
 
 
 
 if __name__ == "__main__":
-    choose_your_items()
+    buy_items()
+    summary = Summary()
+    summary.__repr__()

@@ -11,8 +11,11 @@ class Basket:
         self.content = []
 
 
-    def add(self, name, quantity, price):
-        self.content.append({"name": name, "quantity": quantity, "price": price, "subtotal": round(price * quantity, 2)})
+    def add(self, name: str, quantity: int, price: float) -> None:
+        self.content.append({"name": name, "quantity": quantity, "subtotal": round(price * quantity, 2)})
+        print(f"Your basket contains:")
+        for el in self.content:
+            print(el)
 
 
     def remove(self, name):

@@ -2,6 +2,8 @@
 from client import Client
 from stock import Stock
 from basket import Basket
+from ticket import Ticket
+from summary import Summary
 
 
 def client_or_owner() -> str | None:
@@ -19,30 +21,18 @@ def client_or_owner() -> str | None:
         return answer
 
 
-def get_client_infos() -> str | None:
 
-    """
-    Retourne le prénom et le nom du client
-    :return: dict
-    """
-
-    while True:
-        firstname = input("Please enter your firstname: ")
-        if firstname.isdigit() or None:
-            print("Please enter a valid firstname.")
-            continue
-        lastname = input("Please enter your lastname: ").upper()
-        if lastname.isdigit() or None:
-            print("Please enter a valid lastname.")
-            continue
-        return "".join[firstname, lastname]
-
-
-def choose_your_items():
+def buy_items():
     """
     Demande au client de choisir un article et sa quantité
     :return: list[str, float]
     """
+
+    new_client = Client()
+    client_infos = new_client.get_client_infos()
+    client_id = client_infos["client_id"]
+    new_basket = Basket(client_id)
+    new_summary = Summary()
 
     stock = Stock.stock
 
@@ -86,9 +76,29 @@ def choose_your_items():
                 print(f"Quantity must be available.")
                 continue
             Stock.decrease(item["name"], qty)
+
             break
 
         print(f"You add: {item['name']} x {qty} {item['unit']} to your basket")
+        item_price = Stock.find(item["name"])["price"]
+        new_basket.add(item["name"], qty, item_price)
+        while True:
+            buy_more = input("Do you want to buy some more? Y/n: ").lower()
+            if buy_more not in ["y", "n"]:
+                continue
+            if buy_more == "n":
+                want_to_buy = False
+                break
+            else:
+                break
+
+    new_ticket = Ticket(client_id)
+    print(f"new_basket content: {new_basket.content}")
+    new_ticket.add(new_basket.content)
+    print(f"Your ticket: {new_ticket.content}")
+    new_summary.add_each_client_summary(client_id, new_ticket)
+
+
 
 
 
