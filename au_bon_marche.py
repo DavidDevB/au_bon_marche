@@ -31,7 +31,7 @@ def get_client_infos() -> str | None:
         if firstname.isdigit() or None:
             print("Please enter a valid firstname.")
             continue
-        lastname = input("Please enter your lastname: ")
+        lastname = input("Please enter your lastname: ").upper()
         if lastname.isdigit() or None:
             print("Please enter a valid lastname.")
             continue
@@ -40,7 +40,7 @@ def get_client_infos() -> str | None:
 
 def choose_your_items():
     """
-    Demande au cliente de choisir un article et sa quantité
+    Demande au client de choisir un article et sa quantité
     :return: list[str, float]
     """
 
