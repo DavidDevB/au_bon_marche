@@ -20,7 +20,7 @@ class Client:
 
 
     @staticmethod
-    def total_spent() -> int:
+    def total_spent() -> float:
         total_spent = 0
         for purchase in purchases:
             total_spent += purchase["total"]
