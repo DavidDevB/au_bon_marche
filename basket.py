@@ -6,9 +6,21 @@ class Basket:
     Classe Basket représentant le panier et pouvant retourner un booléen selon si le panier est valide ou non.
     """
 
-    def __init__(self, client: list[str], content: list[dict]):
+    def __init__(self, client: list[str]):
         self.client = client
-        self.content = content
+        self.content = []
+
+
+    def add(self, name, quantity, price):
+        self.content.append({"name": name, "quantity": quantity, "price": price, "subtotal": round(price * quantity, 2)})
+
+
+    def remove(self, name):
+        item = next((d for d in self.content if d["name"].lower() == name.lower()), None)
+        if item is None:
+            raise ValueError(f"Item '{name}' not found")
+        self.content.remove(item)
+        return item
 
     @staticmethod
     def validate(items: list) -> bool:
