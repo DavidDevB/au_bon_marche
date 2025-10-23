@@ -6,8 +6,8 @@ class Basket:
     Classe Basket représentant le panier et pouvant retourner un booléen selon si le panier est valide ou non.
     """
 
-    def __init__(self, client: list[str]):
-        self.client = client
+    def __init__(self, client_id: str):
+        self.client_id = client_id
         self.content = []
 
 
@@ -37,3 +37,17 @@ class Basket:
             return False
         else:
             return True
+
+
+class BasketStore:
+
+    def __init__(self):
+        self._baskets: dict[str, Basket] = {}
+
+    def get_basket(self, client_id: str) -> Basket:
+        if client_id not in self._baskets:
+            self_baskets[client_id] = Basket(client_id)
+        return self._baskets[client_id]
+
+    def remove_basket(self, client_id: str) -> None:
+        self._baskets.pop(client_id, None)
