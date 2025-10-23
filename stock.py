@@ -33,3 +33,30 @@ class Stock:
 ]
 
 
+    @classmethod
+    def find(cls, name: str):
+        name = name.strip().lower()
+        return next((d for d in cls.stock if d["name"].lower() == name), None)
+
+
+    @classmethod
+    def decrease(cls, name: str, qty: float):
+        item = cls.find(name)
+        if not item:
+            raise ValueError("Item not found")
+        if qty <= 0:
+            raise ValueError("Quantity must be > 0")
+        if qty > item["stock"]:
+            raise ValueError(f"Not enough stock. Max = {item['stock']} {item['unit']}")
+        item["stock"] -= qty
+        return item["stock"]
+
+    @classmethod
+    def restock(cls, name: str, qty: float):
+        item = cls.find(name)
+        if not item:
+            raise ValueError("Item not found")
+        if qty <= 0:
+            raise ValueError("Quantity must be > 0")
+        item["stock"] += qty
+        return item["stock"]
