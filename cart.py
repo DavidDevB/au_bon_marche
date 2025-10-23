@@ -5,32 +5,51 @@ from product import Product
 
 @dataclass
 class CartItem:
-    """Single line in shopping cart."""
+    """
+    Une ligne du panier : produit & quantité.
+    Pas de modification du stock à ce moment.
+    """
 
     product: Product
-    quantity: float  # Requested quantity (not yet deducted from stock)
+    quantity: float
 
     def normalized(self) -> float:
-        """Return the product normalized quantity (kg rounded to 0.1, pieces rounded to int)."""
+        """
+        Normalisation de la quantité
+            pièces → entier min 1
+            kg → 1 décimale min 0.1
+        """
         return self.product.normalize_qty(self.quantity)
 
     def subtotal(self) -> float:
-        """Compute total price for this line without altering stock."""
+        """
+        Calcul du prix de cette ligne.
+        """
         return self.product.price_for(self.quantity)
 
 
 @dataclass
 class Cart:
-    """Shopping cart. Stock is updated on checkout."""
+    """
+    Panier d'achat.
+    """
+
+    # field(default_factory=list) : crée une NOUVELLE liste pour CHAQUE panier.
+    # Sans ça la liste serait partagée entre paniers.
+    # Exemple :
+    # c1 = Cart(); c2 = Cart()
+    # c1.items.append(CartItem(product=some_product, quantity=1))
+    # len(c1.items)  -> 1
+    # len(c2.items)  -> 0
+    # avec items = [] les deux auraient -> 1
 
     items: List[CartItem] = field(default_factory=list)
 
     def add(self, product: Product, qty: float) -> CartItem:
         """
-        Add an item to the cart without mutating stock yet.
-        If the requested quantity exceeds stock, it is capped to the available amount.
+        Ajout d'un produit au panier.
         """
-        q = product.reserve_possible(qty)
+        q = product.reserve_possible(qty)  # quantité normalisée & plafonnée au stock
         if q <= 0:
             raise ValueError(f"No available stock for {product.name}.")
         item = CartItem(product=product, quantity=q)
@@ -38,14 +57,19 @@ class Cart:
         return item
 
     def total(self) -> float:
-        """Sum of all line subtotals."""
+        """
+        Total du panier.
+        """
         return round(sum(i.subtotal() for i in self.items), 2)
 
     def is_empty(self) -> bool:
+        """Vérifie si le panier est vide."""
         return len(self.items) == 0
 
     def receipt_text(self) -> str:
-        """Build a human-readable ticket for console."""
+        """
+        Ticket de caisse.
+        """
         lines: list[str] = ["===== Ticket de caisse ====="]
         for it in self.items:
             q = it.normalized()
@@ -62,9 +86,12 @@ class Cart:
 
     def checkout(self) -> float:
         """
-        Deduct stock for each item & return total.
+        Validation du panier
+        - Verification des stocks.
+        - Mise à jour du stock.
+        - Prix total.
         """
-        # First pass: validate
+        # Verif stock
         for it in self.items:
             q = it.normalized()
             if not it.product.can_sell(q):
@@ -72,9 +99,10 @@ class Cart:
                     f"Insufficient stock for {it.product.name} at checkout."
                 )
 
-        # Second pass: update stock
+        # MAJ stock
         for it in self.items:
             q = it.normalized()
             it.product.remove_stock(q)
 
+        # Total panier
         return self.total()

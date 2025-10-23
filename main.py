@@ -3,7 +3,7 @@ from store import Store
 
 
 def main() -> None:
-    """Load catalog & start CLI."""
+    """Charge le catalogue et lance l'interaction"""
     catalog = Catalog()
     catalog.load_default()
     store = Store(catalog)

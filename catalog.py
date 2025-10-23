@@ -1,38 +1,61 @@
-from typing import Dict, Iterable
+from dataclasses import dataclass, field
+from typing import Dict, Iterable, ClassVar
 from product import Product, Fruit, Vegetable
 
 
+@dataclass
 class Catalog:
-    """Catalog storing all available products keyed by name."""
+    """
+    Catalogue
 
-    def __init__(self) -> None:
-        self._products: Dict[str, Product] = {}
+    - Stock des produits : key = nom du produit en minuscules.
+    - Méthodes : ajouter, récupérer par nom, lister, filtrer par catégorie.
+    """
+
+    catalogs: ClassVar[list["Catalog"]] = []
+
+    # field(default_factory=dict) : crée un NOUVEAU dict pour CHAQUE Catalog()
+    _products: Dict[str, Product] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        """
+        Ajout de l'objet après la création à 'catalogs: ClassVar[list["Catalog"]] = []'
+        """
+        Catalog.catalogs.append(self)
+
+    # ------------------ Helpers  ---------------------------------------------------------
+
+    @staticmethod
+    def _key(name: str) -> str:
+        """Normalisation de la clef."""
+        return name.strip().lower()
+
+    # ------------------ API  -------------------------------------------------------------
 
     def add(self, product: Product) -> None:
-        """Insert or replace a product in the catalog by its name."""
-        key = product.name.lower()
+        """
+        Ajout d'un produit.
+        """
+        key = self._key(product.name)
         self._products[key] = product
 
     def get(self, name: str) -> Product | None:
-        """Retrieve a product by name (case-insensitive)."""
-        return self._products.get(name.lower())
+        """
+        Recherche d'un produit par nom (insensible à la casse & aux espaces).
+        """
+        return self._products.get(self._key(name))
 
     def all(self) -> Iterable[Product]:
-        """Iterate over all products."""
+        """
+        Tous les produits du catalogue.
+        """
         return self._products.values()
 
-    def by_category(self, category: str) -> list[Product]:
-        """Return products filtered by category."""
-        return [p for p in self._products.values() if p.category == category]
-
-    def __len__(self) -> int:
-        return len(self._products)
-
-    # ---------- Data ----------
+    # ------------------ Données par défaut ------------------
 
     def load_default(self) -> None:
         """
-        Load catalog :
+        Jeu de données fruits et légumes
         """
         # Fruits (kg)
         self.add(Fruit("Clémentine", "kg", 2.90, 6.0))
@@ -44,10 +67,10 @@ class Catalog:
         self.add(Fruit("Orange", "kg", 1.50, 8.0))
         self.add(Fruit("Poire", "kg", 2.50, 5.0))
         self.add(Fruit("Pomme", "kg", 1.50, 8.0))
-        # Fruits (piece)
+        # Fruits (pièce)
         self.add(Fruit("Pamplemousse", "piece", 2.00, 8.0))
 
-        # Vegetables (kg)
+        # Légumes (kg)
         self.add(Vegetable("Carotte", "kg", 1.30, 7.0))
         self.add(Vegetable("Choux de Bruxelles", "kg", 4.00, 4.0))
         self.add(Vegetable("Endive", "kg", 2.50, 5.0))
@@ -55,7 +78,7 @@ class Catalog:
         self.add(Vegetable("Poireau", "kg", 1.20, 5.0))
         self.add(Vegetable("Salsifis", "kg", 2.50, 3.0))
 
-        # Vegetables (piece)
+        # Légumes (pièce)
         self.add(Vegetable("Chou vert", "piece", 2.50, 12.0))
         self.add(Vegetable("Courge butternut", "piece", 2.50, 6.0))
         self.add(Vegetable("Potiron", "piece", 2.50, 6.0))

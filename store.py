@@ -1,23 +1,45 @@
-from typing import List
+from dataclasses import dataclass, field
+from typing import List, ClassVar
 from catalog import Catalog
 from client import Client
 from cart import Cart
 
 
+@dataclass
 class Store:
-    """Catalog, customers & interactive CLI."""
+    """
+    Classe du "magasin"
+    """
 
-    def __init__(self, catalog: Catalog):
-        self.catalog = catalog
-        self.clients: List[Client] = []
+    stores: ClassVar[list["Store"]] = []
 
-    # ---------- I/O ----------
+    catalog: Catalog
+
+    # Liste des clients connus
+    # field(default_factory=list) : crée une nouvelle liste vide pour chaque instanciation.
+    # Si on faisait items = [], toutes les instances partageraient la même liste.
+    # Sans default_factory, la liste serait créée une seule fois au chargement de la classe et PARTAGÉE par toutes les instances.
+    # Exemple :
+    # s1 = Store(catalog); s2 = Store(catalog)
+    # s1.clients.append(Client("Alice", "Dupont"))
+    # len(s1.clients)  -> 1
+    # len(s2.clients)  -> 0
+    # avec clients = [] les deux auraient -> 1
+
+    clients: List[Client] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        """Ajout de l'objet après la création à 'stores : ClassVar[list["Store"]] = []'"""
+        Store.stores.append(self)
+
+    # ---------- I/O ------------------------------------------------------------------------
 
     def run(self) -> None:
         """
-        Role :
-        - 'Client' routes to the shopping flow
-        - 'Gérant' routes to management views (sales, stock, catalog)
+        Menu principal :
+        - "Client" : parcours d'achat.
+        - "Gérant" : ventes, stock, catalogue.
+        - "Quitter"
         """
         while True:
             print("\n=== AU BON MARCHÉ ===")
@@ -37,18 +59,18 @@ class Store:
             else:
                 print("Choix invalide.")
 
-    # ---------- Manager area ----------
+    # ---------- Espace Gérant ----------------------------------------------------
 
     def _manager_menu(self) -> None:
         """
-        Manager menu :
-        - Sales report: totals per customer (no stock lines)
-        - Stock: remaining quantities only (no prices)
-        - Catalog: prices + stock (read-only)
+        Menu gérant
+        - Total par client.
+        - Stock restant.
+        - Catalogue.
         """
         while True:
             print("\n=== Espace Gérant ===")
-            print("[1] Bilan de la journée (ventes)")
+            print("[1] Bilan de la journée")
             print("[2] Stock restant")
             print("[3] Catalogue (prix + stock)")
             print("[4] Retour")
@@ -65,10 +87,12 @@ class Store:
             else:
                 print("Choix invalide.")
 
-    # ---------- Customer helpers----------
+    # ---------- Espace Client -------------------------------------------------------------------
 
     def _find_client(self, firstname: str, lastname: str) -> Client | None:
-        """Return existing client matching names (case-insensitive)."""
+        """
+        Recherche client par prénom/nom (insensible à la casse & aux espaces).
+        """
         fn = firstname.strip().lower()
         ln = lastname.strip().lower()
         for c in self.clients:
@@ -77,7 +101,10 @@ class Store:
         return None
 
     def _get_or_create_client(self, firstname: str, lastname: str) -> Client:
-        """Find existing client or create a new one."""
+        """
+        Recherche d'un client existant ou en création le cas échéant.
+        Ajout du nouveau client à la liste self.clients.
+        """
         existing = self._find_client(firstname, lastname)
         if existing:
             return existing
@@ -85,25 +112,28 @@ class Store:
         self.clients.append(new_client)
         return new_client
 
-    # ---------- Customer flow ----------
+    # ---------- Parcours Client (achat) ----------
 
     def _serve_new_client(self) -> None:
         """
-        Create or reuse client identity, open a new cart
-        and checkout only upon confirmation (stock's updated at checkout).
+        Gestion d'une vente :
+        - Identification du client.
+        - Création du panier.
+        - Ajout des produits au panier.
+        - Déduction du stock & enregistrement de la commande à la validation de l'achat.
         """
         print("\n=== Espace Client ===")
         firstname = input("Prénom : ").strip()
         lastname = input("Nom : ").strip()
 
-        # Detect known or new customer
         existing = self._find_client(firstname, lastname)
         client = self._get_or_create_client(firstname, lastname)
+
+        # Nouveau panier
         cart = Cart()
 
         if existing:
             commands = len(client.orders)
-
             if commands == 0:
                 print(
                     f"Heureux de te revoir {client.full_name()} — prêt·e à commencer ?"
@@ -115,33 +145,39 @@ class Store:
         else:
             print(f"Bienvenue {client.full_name()} !")
 
+        # Ajout de produits au panier
         self._shopping_menu(cart)
 
+        # Si panier vide
         if cart.is_empty():
             print("Panier vide, au revoir.")
             return
 
+        # Aperçu du ticket avant confirmation
         print("\nAperçu du ticket :")
         print(cart.receipt_text())
 
+        # Confirmation d'achat
         confirm = input("Valider et payer ? (o/n) ").strip().lower()
         if confirm == "o":
-            total = cart.checkout()
-            client.add_order(cart)  # Record this command only after successful checkout
+            total = cart.checkout()  # déduction du stock
+            client.add_order(cart)  # enregistrement de la commande validée
             print("\nTicket final:")
             print(cart.receipt_text())
             print(f"Montant encaissé: {total:.2f} €")
         else:
+            # Annulation
             print("Achat annulé, aucun stock déduit.")
 
     def _shopping_menu(self, cart: Cart) -> None:
         """
-        Loop to add products to cart:
-        - Show catalog (price + stock)
-        - Ask for product name and quantity
-        - Add to cart
+        Boucle pour remplir le panier
+        - Affichage du catalogue.
+        - Input produit & quantité.
+        - Ajout de la ligne au panier.
         """
         while True:
+            # Affichage du catalogue
             print("\n--- Catalogue ---")
             for p in self.catalog.all():
                 print(
@@ -159,32 +195,44 @@ class Store:
                 if not product:
                     print("Produit introuvable.")
                     continue
+
+                # Saisie de la quantité
                 try:
                     qty_text = (
-                        input(f"Quantité ({product.unit}) : ").strip().replace(",", ".")
+                        # gestion de la virgule pour les décimales
+                        input(f"Quantité ({product.unit}) : ")
+                        .strip()
+                        .replace(",", ".")
                     )
                     qty = float(qty_text)
                 except ValueError:
                     print("Quantité invalide.")
                     continue
 
+                # Ajout au panier
                 try:
                     item = cart.add(product, qty)
                     print(
                         f"Ajouté: {product.name} x {item.normalized():g} {product.unit}"
                     )
                     print(f"Total panier: {cart.total():.2f} €")
-                except ValueError as e:
-                    print(str(e))
+                except ValueError as err:
+                    # Ex : stock insuffisant
+                    print(str(err))
+
             elif choice == "2":
                 return
             else:
                 print("Choix invalide.")
 
-    # ---------- Manager reports ----------
+    # ---------- Rapports gérant -------------------------------------------------------------------
 
     def print_sales_report(self) -> None:
-        """Show aggregated sales by customer"""
+        """
+        Affichage du bilan des ventes.
+        - Pour chaque client avec au moins un achat validé.
+        - Caisse de la journée.
+        """
         print("\n=== Bilan ===")
         if not self.clients or all(len(c.orders) == 0 for c in self.clients):
             print("Aucun achat validé aujourd'hui.")
@@ -206,7 +254,9 @@ class Store:
         print(f"\nTotal encaissé : {grand_total:.2f} €")
 
     def print_stock_overview(self) -> None:
-        """Display remaining stock only."""
+        """
+        Affichage des quantités restantes par produit.
+        """
         print("\n--- Stock restant ---")
         has_any = False
         for p in self.catalog.all():
@@ -216,7 +266,9 @@ class Store:
             print("Catalogue vide.")
 
     def print_catalog(self) -> None:
-        """Display current catalog with prices & stock."""
+        """
+        Affichage du catalogue complet.
+        """
         print("\n--- Catalogue ---")
         for p in self.catalog.all():
             print(
