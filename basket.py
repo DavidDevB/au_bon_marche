@@ -41,7 +41,7 @@ class Basket:
 
 class BasketStore:
     """
-    Classe BasketStore enregistrant les baskets des clients, pour pouvoir les retrouver ensuite selon le client_id
+    Classe BasketStore enregistrant les baskets des clients, pour pouvoir les retrouver ensuite selon le client_id.
     """
 
     def __init__(self):
