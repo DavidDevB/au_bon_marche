@@ -112,7 +112,7 @@ class Store:
         self.clients.append(new_client)
         return new_client
 
-    # ---------- Parcours Client (achat) ----------
+    # ---------- Parcours Client (achat) -----------------------------------------------------------
 
     def _serve_new_client(self) -> None:
         """
@@ -173,11 +173,11 @@ class Store:
         """
         Boucle pour remplir le panier
         - Affichage du catalogue.
-        - Input produit & quantité.
-        - Ajout de la ligne au panier.
+        - Saisie du produit et de la quantité.
+        - Ajout de la ligne au panier (avec bornage au stock si nécessaire).
         """
         while True:
-            # Affichage du catalogue
+            # Affichage du catalogue courant
             print("\n--- Catalogue ---")
             for p in self.catalog.all():
                 print(
@@ -196,28 +196,36 @@ class Store:
                     print("Produit introuvable.")
                     continue
 
-                # Saisie de la quantité
+                # Saisie de la quantité (on accepte la virgule pour les décimales)
                 try:
                     qty_text = (
-                        # gestion de la virgule pour les décimales
-                        input(f"Quantité ({product.unit}) : ")
-                        .strip()
-                        .replace(",", ".")
+                        input(f"Quantité ({product.unit}) : ").strip().replace(",", ".")
                     )
                     qty = float(qty_text)
                 except ValueError:
                     print("Quantité invalide.")
                     continue
 
+                # Quantité "voulue" après normalisation
+                # ex: 0.04 kg -> 0.1 kg ; 1.6 pièces -> 2
+                desired = product.normalize_qty(qty)
+
                 # Ajout au panier
                 try:
                     item = cart.add(product, qty)
-                    print(
-                        f"Ajouté: {product.name} x {item.normalized():g} {product.unit}"
-                    )
-                    print(f"Total panier: {cart.total():.2f} €")
+
+                    # Si quantité servie < quantité voulue : stock insuffisant
+                    served = item.normalized()
+                    if served < desired:
+                        print(
+                            f"⚠️ Stock insuffisant pour : {product.name} : "
+                            f"Demandé {desired:g} {product.unit}, servi {served:g} {product.unit}."
+                        )
+
+                    print(f"Ajouté : {product.name} x {served:g} {product.unit}")
+                    print(f"Total panier : {cart.total():.2f} €")
+
                 except ValueError as err:
-                    # Ex : stock insuffisant
                     print(str(err))
 
             elif choice == "2":
