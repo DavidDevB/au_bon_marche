@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-
+from typing import ClassVar
 
 @dataclass
 class Stock:
@@ -8,7 +8,7 @@ class Stock:
     Classe Stock représentant le stock restant de légumes et fruits.
     """
 
-    stock = [
+    stock: ClassVar[list[dict]] = [
     {"type": "fruit", "name": "Clementine", "stock": 6, "unit": "kg", "price": 2.90},
     {"type": "fruit", "name": "Date", "stock": 4, "unit": "kg", "price": 7.00},
     {"type": "fruit", "name": "Grenade", "stock": 3, "unit": "kg", "price": 3.50},
