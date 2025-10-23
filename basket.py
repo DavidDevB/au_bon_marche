@@ -22,6 +22,11 @@ class Basket:
         self.content.remove(item)
         return item
 
+
+    def total(self):
+        return round(sum(d["subtotal"] for d in self.content), 2)
+
+
     @staticmethod
     def validate(items: list) -> bool:
         if not items:
