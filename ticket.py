@@ -15,11 +15,15 @@ class Ticket:
 
     def add(self, name, quantity, price):
         self.content.append(
-            {"name": name, "quantity": quantity, "price": price, "subtotal": round(price * quantity, 2)})
+            {"client": client_id, "name": name, "quantity": quantity, "price": price, "subtotal": round(price * quantity, 2)})
 
 
     def total(self):
         return round(sum(d["subtotal"] for d in self.content), 2)
+
+
+    def get_ticket(self, client_id):
+        return next((d for d in self.content if d.get(key) == client_id), default)
 
 
     def __repr__(self):
