@@ -8,9 +8,9 @@ class Ticket:
     Classe Ticket représentant un ticket de caisse d'un client. Peut retourner la liste des achats et le total achetés par le client.
     """
 
-    def __init__(self, client_id: str, content: list[dict]):
+    def __init__(self, client_id: str):
         self.client_id = client_id
-        self.content = content
+        self.content = []
 
 
     def add(self, name, quantity, price):
@@ -22,8 +22,8 @@ class Ticket:
         return round(sum(d["subtotal"] for d in self.content), 2)
 
 
-    def get_ticket(self, client_id):
-        return next((d for d in self.content if d.get(key) == client_id), default)
+    def get_ticket(self, client_id: str) -> dict:
+        return next((d for d in self.content if d.get(key) == client_id), None)
 
 
     def __repr__(self):
