@@ -1,5 +1,5 @@
 # filename: au_bon_marche.py
-from typing import Dict, List, cast
+from typing import cast
 from sales_log import DAY_SALES
 from stock import Stock
 from basket import Basket
@@ -60,7 +60,7 @@ def get_client_infos() -> ClientInfo:
     return {"firstname": firstname, "lastname": lastname}
 
 
-def _print_catalog_lines(stock_list: List[StockRow]) -> None:
+def _print_catalog_lines(stock_list: list[StockRow]) -> None:
     """Affiche le catalogue regroupé en fruit & légumes
     :param stock_list List[StockRow] : stock list
     :return: None
@@ -104,10 +104,10 @@ def choose_your_items() -> None:
     Demande au client de choisir un article et sa quantité
     :return: list[str, float]
     """
-    stock: List[StockRow] = cast(List[StockRow], Stock.stock)
+    stock: list[StockRow] = cast(list[StockRow], Stock.stock)
     _print_catalog_lines(stock)
 
-    items_by_name: Dict[str, StockRow] = {
+    items_by_name: dict[str, StockRow] = {
         d["name"].strip().casefold(): d for d in stock
     }
     client_info: ClientInfo = get_client_infos()

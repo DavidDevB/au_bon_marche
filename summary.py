@@ -1,6 +1,6 @@
 # filename: summary.py
 from dataclasses import dataclass
-from typing import List, Dict, Any, ClassVar
+from typing import Any, ClassVar
 
 from sales_log import SaleRow
 
@@ -12,15 +12,15 @@ class Summary:
     Expected rows: {"firstname": str, "lastname": str, "total": float, ...}
     """
 
-    summaries: ClassVar[List["Summary"]] = []
+    summaries: ClassVar[list["Summary"]] = []
 
-    summary: List[SaleRow]
+    summary: list[SaleRow]
 
     def __post_init__(self) -> None:
         Summary.summaries.append(self)
 
-    def by_client(self) -> List[Dict[str, Any]]:
-        agg: Dict[tuple[str, str], float] = {}
+    def by_client(self) -> list[dict[str, Any]]:
+        agg: dict[tuple[str, str], float] = {}
         for row in self.summary:
             fn = str(row.get("firstname", "")).strip()
             ln = str(row.get("lastname", "")).strip()
@@ -40,13 +40,13 @@ class Summary:
             )
         return "\n".join(lines)
 
-    def by_client_detailed(self) -> List[Dict[str, Any]]:
+    def by_client_detailed(self) -> list[dict[str, Any]]:
         """
         Detailed per-client summary with merged lines per product:
         returns [{"firstname","lastname","total","lines":[{"name","quantity","subtotal","price"}]}]
         :return List[Dict[str, Any]]: detailed summary for client
         """
-        clients: Dict[tuple[str, str], Dict[str, Any]] = {}
+        clients: dict[tuple[str, str], dict[str, Any]] = {}
 
         for row in self.summary:
             fn = str(row.get("firstname", "")).strip()
@@ -72,7 +72,7 @@ class Summary:
                 line["quantity"] = round(line["quantity"] + qty, 3)
                 line["subtotal"] = round(line["subtotal"] + sub, 2)
 
-        result: List[Dict[str, Any]] = []
+        result: list[dict[str, Any]] = []
         for (_fn, _ln), data in clients.items():
             result.append(
                 {
@@ -88,7 +88,7 @@ class Summary:
         """
         Owner-friendly detailed report string.
         """
-        blocks: List[str] = ["=== OWNER DAY SUMMARY ==="]
+        blocks: list[str] = ["=== OWNER DAY SUMMARY ==="]
         detailed = self.by_client_detailed()
         if not detailed:
             blocks.append("No validated purchases yet.")

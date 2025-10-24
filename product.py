@@ -1,6 +1,6 @@
 # filename: product.py
 from dataclasses import dataclass
-from typing import ClassVar, List
+from typing import ClassVar
 
 
 @dataclass
@@ -9,7 +9,7 @@ class Product:
     Classe générique Product pouvant retourner la valeur totale d'un produit restant en stock.
     """
 
-    products: ClassVar[List["Product"]] = []
+    products: ClassVar[list["Product"]] = []
 
     name: str
     stock: int

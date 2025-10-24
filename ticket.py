@@ -1,6 +1,6 @@
 # filename: ticket.py
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, ClassVar
+from typing import Any, ClassVar
 
 
 @dataclass
@@ -9,10 +9,10 @@ class Ticket:
     Classe Ticket représentant un ticket de caisse d'un client. Peut retourner la liste des achats et le total achetés par le client.
     """
 
-    tickets: ClassVar[List["Ticket"]] = []
+    tickets: ClassVar[list["Ticket"]] = []
 
     client_id: str
-    content: List[Dict[str, Any]] = field(default_factory=list)
+    content: list[dict[str, Any]] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         Ticket.tickets.append(self)

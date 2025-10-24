@@ -1,6 +1,6 @@
 # filename: stock.py
 from dataclasses import dataclass
-from typing import ClassVar, List
+from typing import ClassVar
 from types_ import StockRow
 
 
@@ -10,7 +10,7 @@ class Stock:
     Classe Stock représentant le stock restant de légumes et fruits.
     """
 
-    stock: ClassVar[List[StockRow]] = [
+    stock: ClassVar[list[StockRow]] = [
         {
             "type": "fruit",
             "name": "Clementine",

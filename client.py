@@ -1,6 +1,6 @@
 # filename: client.py
 from dataclasses import dataclass, field
-from typing import List, Dict, ClassVar
+from typing import ClassVar
 
 
 @dataclass
@@ -9,11 +9,11 @@ class Client:
     Classe générique Client pouvant retourner le prénom, le nom et/ou le total dépensé par le client pendant la journée.
     """
 
-    clients: ClassVar[List["Client"]] = []
+    clients: ClassVar[list["Client"]] = []
 
     firstname: str
     lastname: str
-    purchases: List[Dict] = field(default_factory=list)
+    purchases: list[dict] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         Client.clients.append(self)
