@@ -4,19 +4,19 @@ from typing import ClassVar, List
 
 
 @dataclass
-class Fruit:
+class Product:
     """
     Classe générique Fruit pouvant retourner la valeur totale d'un fruit restant en stock.
     """
 
-    fruits: ClassVar[List["Fruit"]] = []
+    fruits: ClassVar[List["Product"]] = []
 
     name: str
     stock: int
     price: float
 
     def __post_init__(self) -> None:
-        Fruit.fruits.append(self)
+        Product.fruits.append(self)
 
     def stock_value(self) -> float:
         return self.stock * self.price
