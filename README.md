@@ -43,7 +43,7 @@ Le logiciel est principalement codé en POO (programmation orienté objet) et ut
     - get_client_infos()
   
 - product.py:
-  - @dataclass Fruit
+  - @dataclass Product
 
 - main.py:
   - programme principal
