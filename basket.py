@@ -1,6 +1,6 @@
 # filename: basket.py
 from dataclasses import dataclass, field
-from typing import ClassVar, Dict, List
+from typing import ClassVar
 
 
 @dataclass
@@ -9,17 +9,17 @@ class Basket:
     Classe Basket représentant le panier et pouvant retourner un booléen selon si le panier est valide ou non.
     """
 
-    baskets: ClassVar[List["Basket"]] = []
+    baskets: ClassVar[list["Basket"]] = []
 
     client_id: str
-    content: List[Dict[str, float | str]] = field(default_factory=list)
+    content: list[dict[str, float | str]] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         Basket.baskets.append(self)
 
     def add(self, name: str, quantity: float, price: float) -> None:
         """
-        Add product to basket.
+        Ajouter un produit au panier.
         :param name:
         :param quantity:
         :param price:
@@ -33,9 +33,9 @@ class Basket:
             }
         )
 
-    def remove(self, name: str) -> Dict[str, float | str]:
+    def remove(self, name: str) -> dict[str, float | str]:
         """
-        Remove product from basket.
+        Retirer un produit du panier.
         :param name:
         :return:
         """
@@ -51,9 +51,9 @@ class Basket:
         return round(sum(float(d["subtotal"]) for d in self.content), 2)
 
     @staticmethod
-    def validate(items: List[Dict[str, float | str]]) -> bool:
+    def validate(items: list[dict[str, float | str]]) -> bool:
         """
-        Validate basket : not empty & quantity is valid
+        Valider le panier : non vide & quantity valide
         :param items:
         :return:
         """
@@ -76,11 +76,11 @@ class BasketStore:
     Classe BasketStore enregistrant les baskets des clients, pour pouvoir les retrouver ensuite selon le client_id.
     """
 
-    _baskets: Dict[str, Basket] = field(default_factory=dict)
+    _baskets: dict[str, Basket] = field(default_factory=dict)
 
     def get_basket(self, client_id: str) -> Basket:
         """
-        Get basket by client_id.
+        Chercher un panier par client_id.
         :param client_id:
         :return basket:
         """
@@ -90,16 +90,16 @@ class BasketStore:
 
     def remove_basket(self, client_id: str) -> None:
         """
-        Remove basket by client_id.
+        Retirer un panier par client_id.
         :param client_id:
         :return None:
         """
         self._baskets.pop(client_id, None)
 
     @staticmethod
-    def validate(items: List[Dict[str, float | str]]) -> bool:
+    def validate(items: list[dict[str, float | str]]) -> bool:
         """
-        Validate basket : not empty & quantity is valid
+        Valider le panier : non vide & quantity valide
         :param items:
         :return:
         """
@@ -110,4 +110,3 @@ class BasketStore:
             print("One or more items has non-positive quantity.")
             return False
         return True
-

@@ -1,14 +1,16 @@
 # filename: types_.py
 # shared TypedDict for stock rows
 
-from typing import TypedDict
+from typing import TypedDict, Literal
+
+Unit = Literal["kg", "piece"]
 
 
 class StockRow(TypedDict):
     type: str
     name: str
     stock: float
-    unit: str
+    unit: Unit
     price: float
 
 

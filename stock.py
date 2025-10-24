@@ -1,7 +1,6 @@
 # filename: stock.py
 from dataclasses import dataclass
 from typing import ClassVar, List
-
 from types_ import StockRow
 
 

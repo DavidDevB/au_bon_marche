@@ -4,7 +4,25 @@ from sales_log import DAY_SALES
 from stock import Stock
 from basket import Basket
 from ticket import Ticket
-from types_ import StockRow, ClientInfo
+from types_ import StockRow, ClientInfo, Unit
+
+
+def ask_yes_no(prompt: str, default: bool | None = None) -> bool:
+    """
+    Fonction utilitaire pour les inputs de type "oui ou non"
+    :param prompt:
+    :param default:
+    :return:
+    """
+    while True:
+        ans = input(prompt).strip().lower()
+        if ans in ("y", "yes", "o", "oui"):
+            return True
+        if ans in ("n", "no", "non"):
+            return False
+        if ans == "" and default is not None:
+            return default
+        print("Please answer with 'y' or 'n'.")
 
 
 def client_or_owner() -> str:
@@ -30,14 +48,14 @@ def get_client_infos() -> ClientInfo:
     lastname = ""
     while True:
         fn = input("Please enter your firstname: ").strip()
-        if not fn or any(ch.isdigit() for ch in firstname):
+        if not fn or any(ch.isdigit() for ch in fn):
             print("Please enter a valid firstname.")
             continue
         ln = input("Please enter your lastname: ").strip()
-        if not ln or any(ch.isdigit() for ch in lastname):
+        if not ln or any(ch.isdigit() for ch in ln):
             print("Please enter a valid lastname.")
             continue
-        firstname, lastname = fn, ln
+        firstname, lastname = fn.capitalize(), ln.upper()
         break
     return {"firstname": firstname, "lastname": lastname}
 
@@ -65,7 +83,7 @@ def _print_catalog_lines(stock_list: List[StockRow]) -> None:
     print()
 
 
-def _normalize_qty(unit: str, qty_raw: float) -> float:
+def _normalize_qty(unit: Unit, qty_raw: float) -> float:
     """Normalise la quantité :
     piece -> int>=1
     kg -> 1 decimal >= 0.1
@@ -89,19 +107,20 @@ def choose_your_items() -> None:
     stock: List[StockRow] = cast(List[StockRow], Stock.stock)
     _print_catalog_lines(stock)
 
-    items_by_name: Dict[str, StockRow] = {d["name"].strip().lower(): d for d in stock}
-
-    client_info: ClientInfo = cast(ClientInfo, get_client_infos())
-    assert client_info is not None
+    items_by_name: Dict[str, StockRow] = {
+        d["name"].strip().casefold(): d for d in stock
+    }
+    client_info: ClientInfo = get_client_infos()
     client_id = f"{client_info['firstname']} {client_info['lastname']}"
     basket = Basket(client_id)
-
     want_to_buy = True
     while want_to_buy:
         item: StockRow | None = None
         while True:
-            name = input("Choose an item by name (or 'n' to finish): ").strip().lower()
-            if name in ("n", "no"):
+            name = (
+                input("Choose an item by name (or 'n' to finish): ").strip().casefold()
+            )
+            if name in ("n", "no", "q", "quit"):
                 want_to_buy = False
                 break
             item = items_by_name.get(name)
@@ -117,6 +136,8 @@ def choose_your_items() -> None:
         unit = item["unit"]
 
         qty: float | None = None
+        desired: float | None = None
+
         while True:
             qty_text = (
                 input(f"Choose quantity (available={item['stock']} {unit}): ")
@@ -137,8 +158,8 @@ def choose_your_items() -> None:
                 print("Please enter an integer for pieces.")
                 continue
 
-            qn = _normalize_qty(unit, int(qty_num) if unit == "piece" else qty_num)
-
+            desired = float(int(qty_num)) if unit == "piece" else float(qty_num)
+            qn = _normalize_qty(unit, desired)
             if qn > item["stock"]:
                 print(f"Quantity must be <= {item['stock']} {unit}.")
                 continue
@@ -149,10 +170,13 @@ def choose_your_items() -> None:
         assert qty is not None
         Stock.decrease(item["name"], qty)
         basket.add(item["name"], qty, item["price"])
-        print(f"You add: {item['name']} x {qty} {unit} to your basket")
+        if qty != desired:
+            print(f"(normalized from {desired:g} to {qty:g} {unit})")
+        print(f"You add: {item['name']} x {qty:g} {unit} to your basket")
 
-        again = input("Do you want to add another item? (y/n): ").strip().lower()
-        want_to_buy = again == "y"
+        want_to_buy = ask_yes_no(
+            "Do you want to add another item? (y/n): ", default=None
+        )
 
     if not basket.content:
         print("\nNo items selected. Returning to role menu.")
