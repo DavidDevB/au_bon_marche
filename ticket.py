@@ -1,16 +1,23 @@
-import re
+# filename: ticket.py
+from dataclasses import dataclass, field
+from typing import List, Dict, Any, ClassVar
 
 
+@dataclass
 class Ticket:
     """
     Classe Ticket représentant un ticket de caisse d'un client. Peut retourner la liste des achats et le total achetés par le client.
     """
 
-    def __init__(self, client_id: str, content: list[dict]):
-        self.client_id = client_id
-        self.content = content
+    tickets: ClassVar[List["Ticket"]] = []
 
-    def add(self, name, quantity, price):
+    client_id: str
+    content: List[Dict[str, Any]] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        Ticket.tickets.append(self)
+
+    def add(self, name, quantity, price) -> None:
         self.content.append(
             {
                 "name": name,
@@ -21,7 +28,7 @@ class Ticket:
         )
 
     def total(self) -> float:
-        return round(sum(d["subtotal"] for d in self.content), 2)
+        return round(sum(float(d["subtotal"]) for d in self.content), 2)
 
     def __repr__(self) -> str:
         parts = str(self.client_id).replace("_", " ").split()
@@ -35,3 +42,7 @@ class Ticket:
             )
         lines.append(f"TOTAL: {self.total():.2f}€")
         return "\n".join(lines)
+
+    @classmethod
+    def nb_tickets(cls) -> int:
+        return len(cls.tickets)

@@ -9,4 +9,4 @@ class SaleRow(TypedDict, total=False):
     total: float
 
 
-DAY_SALES: List[dict] = []
+DAY_SALES: List[SaleRow] = []

@@ -1,15 +1,26 @@
+# filename: summary.py
+from dataclasses import dataclass
+from typing import List, Dict, Any, ClassVar
+
+from sales_log import SaleRow
+
+
+@dataclass
 class Summary:
     """
     Day summary aggregator. Takes raw purchase rows and provides totals by client.
     Expected rows: {"firstname": str, "lastname": str, "total": float, ...}
     """
 
-    def __init__(self, summary: list[dict]):
-        self.summary = summary  # list of validated purchases
+    summaries: ClassVar[List["Summary"]] = []
 
-    def by_client(self) -> list[dict]:
-        # group by firstname - lastname
-        agg: dict[tuple[str, str], float] = {}
+    summary: List[SaleRow]
+
+    def __post_init__(self) -> None:
+        Summary.summaries.append(self)
+
+    def by_client(self) -> List[Dict[str, Any]]:
+        agg: Dict[tuple[str, str], float] = {}
         for row in self.summary:
             fn = str(row.get("firstname", "")).strip()
             ln = str(row.get("lastname", "")).strip()
@@ -29,15 +40,12 @@ class Summary:
             )
         return "\n".join(lines)
 
-        # AJOUTER DANS Summary (laisser ta version actuelle en place) :
-
-    def by_client_detailed(self) -> list[dict]:
+    def by_client_detailed(self) -> List[Dict[str, Any]]:
         """
         Detailed per-client summary with merged lines per product:
         returns [{"firstname","lastname","total","lines":[{"name","quantity","subtotal","price"}]}]
         """
-        # comment: group per client, then per product
-        clients: dict[tuple[str, str], dict] = {}
+        clients: Dict[tuple[str, str], Dict[str, Any]] = {}
 
         for row in self.summary:
             fn = str(row.get("firstname", "")).strip()
@@ -51,7 +59,6 @@ class Summary:
             )
             entry["total"] = round(entry["total"] + total, 2)
 
-            # merge lines by product name
             for it in items:
                 name = str(it.get("name", ""))
                 qty = float(it.get("quantity", 0.0))
@@ -59,26 +66,19 @@ class Summary:
                 price = float(it.get("price", 0.0))
                 line = entry["lines"].setdefault(
                     name,
-                    {
-                        "name": name,
-                        "quantity": 0.0,
-                        "subtotal": 0.0,
-                        "price": price,
-                    },
+                    {"name": name, "quantity": 0.0, "subtotal": 0.0, "price": price},
                 )
                 line["quantity"] = round(line["quantity"] + qty, 3)
                 line["subtotal"] = round(line["subtotal"] + sub, 2)
 
-        # normalize dict-of-lines into list
-        result: list[dict] = []
-        for (fn, ln), data in clients.items():
-            lines_list = list(data["lines"].values())
+        result: List[Dict[str, Any]] = []
+        for (_fn, _ln), data in clients.items():
             result.append(
                 {
                     "firstname": data["firstname"],
                     "lastname": data["lastname"],
                     "total": data["total"],
-                    "lines": lines_list,
+                    "lines": list(data["lines"].values()),
                 }
             )
         return result
@@ -87,16 +87,14 @@ class Summary:
         """
         Owner-friendly detailed report string.
         """
-        blocks: list[str] = ["=== OWNER DAY SUMMARY ==="]
+        blocks: List[str] = ["=== OWNER DAY SUMMARY ==="]
         detailed = self.by_client_detailed()
         if not detailed:
             blocks.append("No validated purchases yet.")
             return "\n".join(blocks)
 
-        # sort by lastname, firstname
         detailed.sort(key=lambda d: (d["lastname"].lower(), d["firstname"].lower()))
-
-        day_total = round(sum(rec["total"] for rec in detailed), 2)
+        day_total = round(sum(float(rec["total"]) for rec in detailed), 2)
 
         for rec in detailed:
             blocks.append(
@@ -109,3 +107,7 @@ class Summary:
 
         blocks.append(f"\n=== DAY TOTAL : {day_total:.2f} €")
         return "\n".join(blocks)
+
+    @classmethod
+    def nb_summaries(cls) -> int:
+        return len(cls.summaries)

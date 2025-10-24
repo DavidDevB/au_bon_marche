@@ -1,13 +1,23 @@
+# filename: basket.py
+from dataclasses import dataclass, field
+from typing import ClassVar, Dict, List
+
+
+@dataclass
 class Basket:
     """
     Classe Basket représentant le panier et pouvant retourner un booléen selon si le panier est valide ou non.
     """
 
-    def __init__(self, client_id: str):
-        self.client_id = client_id
-        self.content = []
+    baskets: ClassVar[List["Basket"]] = []
 
-    def add(self, name: str, quantity: float, price: float):
+    client_id: str
+    content: List[Dict[str, float | str]] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        Basket.baskets.append(self)
+
+    def add(self, name: str, quantity: float, price: float) -> None:
         self.content.append(
             {
                 "name": name,
@@ -17,37 +27,40 @@ class Basket:
             }
         )
 
-    def remove(self, name):
+    def remove(self, name: str) -> Dict[str, float | str]:
         item = next(
-            (d for d in self.content if d["name"].lower() == name.lower()), None
+            (d for d in self.content if str(d["name"]).lower() == name.lower()), None
         )
         if item is None:
             raise ValueError(f"Item '{name}' not found")
         self.content.remove(item)
         return item
 
-    def total(self):
-        return round(sum(d["subtotal"] for d in self.content), 2)
+    def total(self) -> float:
+        return round(sum(float(d["subtotal"]) for d in self.content), 2)
 
     @staticmethod
-    def validate(items: list) -> bool:
+    def validate(items: List[Dict[str, float | str]]) -> bool:
         if not items:
             print("Basket is empty.")
             return False
-        elif any(item.stock <= 0 for item in items):
-            print("One or more item's stock is empty.")
+        if any(float(d.get("quantity", 0.0)) <= 0 for d in items):
+            print("One or more items has non-positive quantity.")
             return False
-        else:
-            return True
+        return True
+
+    @classmethod
+    def count(cls) -> int:
+        return len(cls.baskets)
 
 
+@dataclass
 class BasketStore:
     """
     Classe BasketStore enregistrant les baskets des clients, pour pouvoir les retrouver ensuite selon le client_id.
     """
 
-    def __init__(self):
-        self._baskets: dict[str, Basket] = {}
+    _baskets: Dict[str, Basket] = field(default_factory=dict)
 
     def get_basket(self, client_id: str) -> Basket:
         if client_id not in self._baskets:
@@ -58,11 +71,11 @@ class BasketStore:
         self._baskets.pop(client_id, None)
 
     @staticmethod
-    def validate(items: list[dict]) -> bool:
+    def validate(items: List[Dict[str, float | str]]) -> bool:
         if not items:
             print("Basket is empty.")
             return False
-        if any(d.get("quantity", 0) <= 0 for d in items):
+        if any(float(d.get("quantity", 0.0)) <= 0 for d in items):
             print("One or more items has non-positive quantity.")
             return False
         return True
