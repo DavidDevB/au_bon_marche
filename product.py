@@ -1,4 +1,4 @@
-# filename: fruit.py
+# filename: product.py
 from dataclasses import dataclass
 from typing import ClassVar, List
 
