@@ -18,6 +18,12 @@ class Basket:
         Basket.baskets.append(self)
 
     def add(self, name: str, quantity: float, price: float) -> None:
+        """
+        Add product to basket.
+        :param name:
+        :param quantity:
+        :param price:
+        """
         self.content.append(
             {
                 "name": name,
@@ -28,6 +34,11 @@ class Basket:
         )
 
     def remove(self, name: str) -> Dict[str, float | str]:
+        """
+        Remove product from basket.
+        :param name:
+        :return:
+        """
         item = next(
             (d for d in self.content if str(d["name"]).lower() == name.lower()), None
         )
@@ -41,6 +52,11 @@ class Basket:
 
     @staticmethod
     def validate(items: List[Dict[str, float | str]]) -> bool:
+        """
+        Validate basket : not empty & quantity is valid
+        :param items:
+        :return:
+        """
         if not items:
             print("Basket is empty.")
             return False
@@ -63,15 +79,30 @@ class BasketStore:
     _baskets: Dict[str, Basket] = field(default_factory=dict)
 
     def get_basket(self, client_id: str) -> Basket:
+        """
+        Get basket by client_id.
+        :param client_id:
+        :return basket:
+        """
         if client_id not in self._baskets:
             self._baskets[client_id] = Basket(client_id)
         return self._baskets[client_id]
 
     def remove_basket(self, client_id: str) -> None:
+        """
+        Remove basket by client_id.
+        :param client_id:
+        :return None:
+        """
         self._baskets.pop(client_id, None)
 
     @staticmethod
     def validate(items: List[Dict[str, float | str]]) -> bool:
+        """
+        Validate basket : not empty & quantity is valid
+        :param items:
+        :return:
+        """
         if not items:
             print("Basket is empty.")
             return False
@@ -79,3 +110,4 @@ class BasketStore:
             print("One or more items has non-positive quantity.")
             return False
         return True
+

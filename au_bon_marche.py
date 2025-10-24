@@ -43,7 +43,10 @@ def get_client_infos() -> ClientInfo:
 
 
 def _print_catalog_lines(stock_list: List[StockRow]) -> None:
-    """Affiche le catalogue regroupé en fruit & légumes"""
+    """Affiche le catalogue regroupé en fruit & légumes
+    :param stock_list List[StockRow] : stock list
+    :return: None
+    """
     print("\n=== FRUITS ===")
     for el in stock_list:
         if el["type"] == "fruit":
@@ -66,6 +69,9 @@ def _normalize_qty(unit: str, qty_raw: float) -> float:
     """Normalise la quantité :
     piece -> int>=1
     kg -> 1 decimal >= 0.1
+    :param unit:
+    :param qty_raw:
+    :return: normalized quantity
     """
     if unit == "piece":
         q_piece: int = int(round(qty_raw))

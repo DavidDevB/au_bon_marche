@@ -18,6 +18,12 @@ class Ticket:
         Ticket.tickets.append(self)
 
     def add(self, name, quantity, price) -> None:
+        """
+        Add a row to ticket.
+        :param name:
+        :param quantity:
+        :param price:
+        """
         self.content.append(
             {
                 "name": name,

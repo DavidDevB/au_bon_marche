@@ -102,11 +102,22 @@ class Stock:
 
     @classmethod
     def find(cls, name: str) -> StockRow | None:
+        """
+        Find a product in stock by name.
+        :param name:
+        :return None|StockRow:
+        """
         name_norm = name.strip().lower()
         return next((d for d in cls.stock if d["name"].lower() == name_norm), None)
 
     @classmethod
     def decrease(cls, name: str, qty: float) -> float:
+        """
+        Find product & decrease stock by quantity.
+        :param name:product
+        :param qty:quantity
+        :return float: new stock quantity for given product
+        """
         item = cls.find(name)
         if not item:
             raise ValueError("Item not found")
@@ -119,6 +130,12 @@ class Stock:
 
     @classmethod
     def restock(cls, name: str, qty: float) -> float:
+        """
+        Refill stock by quantity for a given product.
+        :param name: product
+        :param qty:
+        :return float: new stock quantity for given product
+        """
         item = cls.find(name)
         if not item:
             raise ValueError("Item not found")

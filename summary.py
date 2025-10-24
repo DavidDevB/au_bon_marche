@@ -44,6 +44,7 @@ class Summary:
         """
         Detailed per-client summary with merged lines per product:
         returns [{"firstname","lastname","total","lines":[{"name","quantity","subtotal","price"}]}]
+        :return List[Dict[str, Any]]: detailed summary for client
         """
         clients: Dict[tuple[str, str], Dict[str, Any]] = {}
 
