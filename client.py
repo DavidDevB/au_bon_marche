@@ -1,50 +1,32 @@
-import re
+# filename: client.py
+from dataclasses import dataclass, field
+from typing import List, Dict, ClassVar
 
+
+@dataclass
 class Client:
-
     """
     Classe générique Client pouvant retourner le prénom, le nom et/ou le total dépensé par le client pendant la journée.
     """
 
+    clients: ClassVar[List["Client"]] = []
 
-    def __init__(self):
-        self.firstname: str = ""
-        self.lastname: str= ""
-        self.client_id: str = ""
+    firstname: str
+    lastname: str
+    purchases: List[Dict] = field(default_factory=list)
 
-    def get_client_infos(self) -> dict:
+    def __post_init__(self) -> None:
+        Client.clients.append(self)
 
-        """
-        Retourne le prénom et le nom du client
-        :return: dict
-        """
+    def get_firstname(self) -> str:
+        return self.firstname
 
-        name_re = re.compile(r"^[A-Za-zÀ-ÖØ-öø-ÿ' -]{2,50}$")
+    def get_lastname(self) -> str:
+        return self.lastname
 
-        while True:
-            firstname = input("Please enter your firstname: ")
-            if not firstname or not name_re.match(firstname):
-                print("Please enter a valid firstname.")
-                continue
+    def total_spent(self) -> float:
+        return round(sum(float(p.get("total", 0.0)) for p in self.purchases), 2)
 
-            lastname = input("Please enter your lastname: ").upper()
-            if not lastname or not name_re.match(lastname):
-                print("Please enter a valid lastname.")
-                continue
-
-            self.firstname = firstname
-            self.lastname = lastname
-            self.client_id = "".join([firstname, lastname])
-            break
-
-        return {
-            "firstname": self.firstname,
-            "lastname": self.lastname,
-            "client_id": self.client_id,
-    }
-
-
-
-
-
-
+    @classmethod
+    def nb_clients(cls) -> int:
+        return len(cls.clients)
