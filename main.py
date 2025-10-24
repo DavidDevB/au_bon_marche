@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # filename: main.py
 from au_bon_marche import client_or_owner, choose_your_items
 from sales_log import DAY_SALES
